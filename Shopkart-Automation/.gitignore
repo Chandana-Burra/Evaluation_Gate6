@@ -21,8 +21,14 @@ out/
 !**/src/test/**/out/
 .idea/
 **/.idea/
+
+
 *.jar
 **/*.jar
+
+# Keep Gradle wrapper jar
+!gradle/wrapper/gradle-wrapper.jar
+!Shopkart-Automation/gradle/wrapper/gradle-wrapper.jar
 
 # Eclipse
 .apt_generated
