@@ -1,0 +1,89 @@
+name: Java CI
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Run tests
+        run: gradle clean test cucumber --no-configuration-cache
+
+      # Checkout gh-pages so Allure can preserve history
+      - name: Checkout gh-pages
+        if: always()
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Generate Allure Report
+        if: always()
+        uses: simple-elf/allure-report-action@master
+        with:
+          allure_results: build/allure-results
+          allure_report: allure-report
+          gh_pages: gh-pages
+          allure_history: allure-history
+          keep_reports: 20
+
+      - name: Verify Allure Report
+        if: always()
+        run: |
+          echo "===== Allure Report ====="
+          ls -la allure-report
+
+          echo "===== Allure History ====="
+          ls -la allure-history
+
+          test -f allure-report/index.html
+
+      - name: Upload Allure Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-history
+
+      - name: Deploy to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
+
+      - name: Report Link
+        if: always()
+        run: |
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+
+          REPORT_URL="https://${OWNER}.github.io/${REPO}/"
+
+          echo "Tests completed"
+          echo "Report: ${REPORT_URL}"
+
+          echo "## Allure Report" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 ${REPORT_URL}" >> $GITHUB_STEP_SUMMARY
+
