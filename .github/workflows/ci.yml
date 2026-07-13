@@ -27,8 +27,7 @@ jobs:
         with:
           gradle-version: 8.10.2
 
-      # Since gradle-wrapper.jar is not in the repository,
-      # generate the wrapper during CI.
+   
       - name: Generate Gradle Wrapper
         working-directory: Shopkart-Automation
         run: gradle wrapper
