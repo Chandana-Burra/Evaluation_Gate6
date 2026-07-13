@@ -1,31 +1,41 @@
+# ============================================================================
 # Gradle
+# ============================================================================
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+gradle-wrapper.jar.sha256
 
+# ============================================================================
 # Maven
+# ============================================================================
 target/
 
-# Kotlin
-.kotlin/
+# ============================================================================
+# Build and Compiled Output
+# ============================================================================
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+out/
+dist/
 
+# ============================================================================
+# IDE and Editor Configuration
+# ============================================================================
 # IntelliJ IDEA
 .idea/
+.idea_modules/
 *.iml
 *.ipr
 *.iws
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-.idea/
-**/.idea/
-*.jar
-**/*.jar
+*.iws.xml
 
 # Eclipse
-.apt_generated
+.apt_generated/
 .classpath
 .factorypath
 .project
@@ -33,48 +43,61 @@ out/
 .springBeans
 .sts4-cache/
 bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
 
 # NetBeans
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+nbproject/
+.nb-gradle/
+nbbuild/
+nbdist/
 
 # VS Code
 .vscode/
+*.code-workspace
 
-# macOS
+# Kotlin
+.kotlin/
+
+# ============================================================================
+# Test Reports and Coverage
+# ============================================================================
+test-output/
+reports/
+test-results/
+allure-results/
+allure-report/
+coverage/
+*.coverage
+
+# ============================================================================
+# Logs
+# ============================================================================
+*.log
+logs/
+*.pid
+
+# ============================================================================
+# Environment and Configuration
+# ============================================================================
+.env
+.env.*
+!.env.example
+
+# ============================================================================
+# OS-specific Files
+# ============================================================================
 .DS_Store
-
-# Windows
 Thumbs.db
 Desktop.ini
 
-# Logs
-*.log
-
-# Temporary files
+# ============================================================================
+# Temporary and Cache Files
+# ============================================================================
 *.tmp
 *.temp
 *.swp
 *.swo
-
-# Test reports
-test-output/
-reports/
-allure-results/
-allure-report/
-
-# Environment files
-.env
-.env.*
-
-# Java
-*.class
-
-# OS-generated files
-*.pid
-*.seed
+*.bak
+*~
+.cache/
+.gradle-cache/
+.m2/
