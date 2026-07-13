@@ -1,0 +1,8 @@
+"BROKEN","EPIC","FAILED","FEATURE","PASSED","SKIPPED","STORY","UNKNOWN"
+"11","","0","","0","6","","0"
+"1","","0","Orders are visible only to their owner","0","0","Another customer cannot read someone else's order","0"
+"1","","0","Cancel order rules","0","0","Cancel a placed order","0"
+"1","","0","Cart Totals","0","0","Cart total equals quantity multiplied by price","0"
+"1","","0","Checkout places an order and the backend agrees","0","0","A logged-in customer checks out a two-item cart","0"
+"1","","0","Out of stock","0","0","Quantity exceeds stock","0"
+"1","","0","Product Search","0","0","Search returns matching products","0"
