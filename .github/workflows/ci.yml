@@ -39,7 +39,7 @@ jobs:
       - name: Run Tests
         working-directory: Shopkart-Automation
         run: |
-          ./gradlew clean test --test "AbstractPostgresIntegrationTest"
+          ./gradlew clean test --tests "com.shopkart.data.db.AbstractPostgresIntegrationTest"
 
       - name: Checkout gh-pages branch
         if: always()
