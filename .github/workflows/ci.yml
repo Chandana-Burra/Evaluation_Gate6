@@ -1,4 +1,4 @@
-name: Test Environment
+name: Shopkart Automation Tests
 
 on:
   push:
