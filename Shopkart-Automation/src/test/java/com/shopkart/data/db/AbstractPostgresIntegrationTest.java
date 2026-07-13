@@ -1,4 +1,4 @@
-package com.shopkart.support;
+package com.shopkart.data.db;
 
 import com.shopkart.data.db.FlywaySupport;
 import com.shopkart.data.db.PostgresSupport;
