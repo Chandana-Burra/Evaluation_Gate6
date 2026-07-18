@@ -1,4 +1,4 @@
-name: TripStack Test
+name: TripStack Test Suite
 
 on:
   push:
