@@ -1,45 +1,109 @@
-name: TripStack Test Suite
+name: TripStack CI
 
 on:
   push:
-    branches: [main, master]
+    branches:
+      - main
   pull_request:
-    branches: [main, master]
-  workflow_dispatch:
-
-permissions:
-  contents: read
+    branches:
+      - main
 
 jobs:
-  ui-tests:
-    name: UI tests (Playwright)
+  ui:
+    name: Playwright UI
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     defaults:
       run:
         working-directory: Playwright_Final_Capstone
     steps:
-      - name: Check out source
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: Playwright_Final_Capstone/package-lock.json
-
-      - name: Install dependencies
+          node-version: 20.x
+      - name: Install UI dependencies
         run: npm ci
-
-      - name: Check TypeScript
-        run: npm run typecheck
-
-      - name: Install Chromium
+      - name: Install browser dependencies
         run: npx playwright install --with-deps chromium
+      - name: Run Playwright UI tests
+        run: npx playwright test --project=chromium
+        env:
+          BASE_URL: ${{ vars.TRIPSTACK_BASE_URL || 'https://tripstack.doomple.com/' }}
+          HEADLESS: 'true'
+          TRIPSTACK_EMAIL: ${{ secrets.TRIPSTACK_EMAIL }}
+          TRIPSTACK_PASSWORD: ${{ secrets.TRIPSTACK_PASSWORD }}
+          SEAT_MAP_MAX_RENDER_MS: ${{ vars.SEAT_MAP_MAX_RENDER_MS || '5000' }}
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: Playwright_Final_Capstone/artifacts/html-report
+      - name: Upload Playwright traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: Playwright_Final_Capstone/artifacts/test-results
+      - name: Generate Allure report
+        if: always()
+        run: npm run allure:generate
+      - name: Upload Allure raw results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-raw-ui
+          path: Playwright_Final_Capstone/allure-results
+          if-no-files-found: warn
+      - name: Upload Allure generated report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-ui
+          path: Playwright_Final_Capstone/artifacts/allure-report
+          if-no-files-found: warn
 
-      - name: Run UI tests
-        run: npm run test:ui
+  api:
+    name: RestAssured API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: API_Testing_Finalcapstone
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Run API tests
+        run: mvn -B -q test
+      - name: Upload Maven surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-results
+          path: API_Testing_Finalcapstone/target/surefire-reports
+
+  performance-gate:
+    name: Performance Gate
+    runs-on: ubuntu-latest
+    needs: [ui]
+    defaults:
+      run:
+        working-directory: Playwright_Final_Capstone
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20.x
+      - name: Install UI dependencies
+        run: npm ci
+      - name: Install browser dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Run performance gate tests
+        run: npx playwright test --project=chromium --grep @performance
         env:
           BASE_URL: ${{ vars.TRIPSTACK_BASE_URL || 'https://tripstack.doomple.com/' }}
           HEADLESS: 'true'
@@ -47,47 +111,19 @@ jobs:
           TRIPSTACK_PASSWORD: ${{ secrets.TRIPSTACK_PASSWORD }}
           SEAT_MAP_MAX_RENDER_MS: ${{ vars.SEAT_MAP_MAX_RENDER_MS || '5000' }}
 
-      - name: Upload UI reports and evidence
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ui-test-report
-          path: |
-            Playwright_Final_Capstone/artifacts/html-report/
-            Playwright_Final_Capstone/artifacts/junit/results.xml
-            Playwright_Final_Capstone/artifacts/test-results/
-          if-no-files-found: warn
-          retention-days: 30
-
-  api-tests:
-    name: API tests (Maven)
+  security-gate:
+    name: Security Gate
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    needs: [api]
     defaults:
       run:
         working-directory: API_Testing_Finalcapstone
     steps:
-      - name: Check out source
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: '21'
-          cache: maven
-          cache-dependency-path: API_Testing_Finalcapstone/pom.xml
-
-      - name: Run API tests
-        run: mvn --batch-mode --no-transfer-progress verify
-
-      - name: Upload API test reports
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-test-report
-          path: |
-            API_Testing_Finalcapstone/target/surefire-reports/
-            API_Testing_Finalcapstone/target/failsafe-reports/
-          if-no-files-found: warn
-          retention-days: 30
+      - name: Run security negative tests
+        run: mvn -B -q -Dtest=SecurityNegativeTests test
