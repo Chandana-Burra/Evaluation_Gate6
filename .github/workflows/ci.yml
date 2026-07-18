@@ -47,22 +47,14 @@ jobs:
         with:
           name: playwright-traces
           path: Playwright_Final_Capstone/artifacts/test-results
-      - name: Generate Allure report
-        if: always()
-        run: npm run allure:generate
-      - name: Upload Allure raw results
+      - name: Upload Playwright artifacts (report & traces)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-raw-ui
-          path: Playwright_Final_Capstone/allure-results
-          if-no-files-found: warn
-      - name: Upload Allure generated report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report-ui
-          path: Playwright_Final_Capstone/artifacts/allure-report
+          name: playwright-artifacts
+          path: |
+            Playwright_Final_Capstone/artifacts/html-report
+            Playwright_Final_Capstone/artifacts/test-results
           if-no-files-found: warn
 
   api:
